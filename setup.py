@@ -27,8 +27,8 @@ setup(
         "Pillow>=8.3.2",
         "anytree>=2.12.1",
         "yacs>=0.1.8",
-        "fsspec>=2024.10.0",
-         
+        "fsspec==2024.10.0",
+
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
