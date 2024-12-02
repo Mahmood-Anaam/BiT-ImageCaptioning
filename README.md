@@ -1,1 +1,1 @@
-# BiT-ArabicCaptioning
+# BiT-ImageCaptioning
