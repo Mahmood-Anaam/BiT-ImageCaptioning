@@ -1,12 +1,12 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="BiT",
+    name="BiTImageCaptioning",
     version="0.1.0",
     description="Arabic Image Captioning using Pre-training of Deep Bidirectional Transformers",
     author="Mahmood Anaam",
     author_email="eng.mahmood.anaam@gmail.com",
-    url="https://github.com/Mahmood-Anaam/BiT",
+    url="https://github.com/Mahmood-Anaam/BiT-ImageCaptioning",
     license="Apache License 2.0",
     packages=find_packages(where="src"),
     package_dir={"": "src"},
@@ -34,7 +34,7 @@ setup(
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: Apache Software License",
+        "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
     python_requires=">=3.9",
