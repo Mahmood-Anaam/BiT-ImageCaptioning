@@ -43,27 +43,22 @@ print("Generated Caption:", caption)
 
 The package is modularly designed to make it easy to understand, extend, and use. Below is the file structure of the package:
 
-```plaintext
+```
 BiT-ImageCaptioning/
 ├── src/
 │   ├── BiTImageCaptioning/
 │   │   ├── __init__.py               # Initialization file for the package
 │   │   ├── configuration.py          # Handles model configurations
-│   │   ├── modeling.py               # Contains the Transformer-based model
-│   │   ├── processing.py             # Handles tokenization and text processing
-│   │   ├── feature_extraction.py     # Handles image feature extraction
-│   │   ├── dataset.py                # Prepares datasets for training and evaluation
-│   │   ├── generation.py             # Contains caption generation logic
+│   │   ├── modeling.py               # Transformer-based model implementation
+│   │   ├── processing.py             # Tokenization and text processing
+│   │   ├── feature_extraction.py     # Image feature extraction logic
+│   │   ├── dataset.py                # Dataset preparation for training and evaluation
+│   │   ├── generation.py             # Caption generation logic
 │   │   └── utils.py                  # Helper functions and utilities
-├── tests/                            # Unit tests for the package
-│   ├── test_modeling.py              # Tests for the model logic
-│   ├── test_feature_extraction.py    # Tests for feature extraction
-│   ├── test_processing.py            # Tests for text processing
-│   └── test_generation.py            # Tests for caption generation
-├── examples/                         # Usage examples for the package
-│   ├── example_generate_caption.py   # Example: Generate captions for an image
-│   ├── example_finetune.py           # Example: Fine-tuning the model
-│   └── example_evaluate.py           # Example: Evaluate model performance
+├── notebooks/                        # Jupyter Notebooks for examples and demonstrations
+│   ├── dataset.ipynb                 # Notebook to demonstrate dataset preparation
+│   ├── evaluation.ipynb              # Notebook for model evaluation
+│   ├── inference.ipynb               # Notebook for caption inference on images
 ├── README.md                         # Documentation for the package
 ├── LICENSE                           # License file
 ├── setup.py                          # Setup script for installation
@@ -101,6 +96,13 @@ print("Generated Caption:", caption)
 - Manages model configurations and utility functions.
 
 
+## Jupyter Notebooks
+
+The `notebooks/` directory contains several Jupyter Notebooks to help you get started:
+
+- `dataset.ipynb`: Demonstrates how to prepare datasets for training and evaluation.
+- `evaluation.ipynb`: Shows how to evaluate the model on test data.
+- `inference.ipynb`: Guides you through generating captions for your images.
 
 
 
