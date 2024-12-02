@@ -7,7 +7,7 @@ setup(
     author="Mahmood Anaam",
     author_email="eng.mahmood.anaam@gmail.com",
     url="https://github.com/Mahmood-Anaam/BiT-ImageCaptioning",
-    license="Apache License 2.0",
+    license="MIT",
     packages=find_packages(where="src"),
     package_dir={"": "src"},
     install_requires=[
@@ -26,11 +26,7 @@ setup(
         "scikit-learn>=0.24.2",
         "Pillow>=8.3.2",
         "anytree>=2.12.1",
-        "yacs>=0.1.8",
-        "cityscapesScripts>=2.2.4",
-        "clint>=0.5.1",
-
-        
+        "yacs>=0.1.8",  
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
