@@ -17,8 +17,8 @@ from pytorch_transformers.modeling_bert import (BertEmbeddings,
         load_tf_weights_in_bert
         )
 
-from .utils.modeling_utils import CaptionPreTrainedModel, ImgPreTrainedModel
-from .utils.cbs import ConstrainedBeamSearch, select_best_beam_with_constraints
+from .modeling_bert_utils import CaptionPreTrainedModel, ImgPreTrainedModel
+from ..utils.cbs import ConstrainedBeamSearch, select_best_beam_with_constraints
 
 logger = logging.getLogger(__name__)
 

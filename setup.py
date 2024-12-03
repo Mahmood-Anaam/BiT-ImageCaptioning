@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="BiTImageCaptioning",
+    name="bit_image_captioning",
     version="0.1.0",
     description="Arabic Image Captioning using Pre-training of Deep Bidirectional Transformers",
     author="Mahmood Anaam",

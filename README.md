@@ -44,25 +44,61 @@ print("Generated Caption:", caption)
 The package is modularly designed to make it easy to understand, extend, and use. Below is the file structure of the package:
 
 ```
-BiT-ImageCaptioning/
+bit_image_captioning/
+│
 ├── src/
-│   ├── BiTImageCaptioning/
-│   │   ├── __init__.py               # Initialization file for the package
-│   │   ├── configuration.py          # Handles model configurations
-│   │   ├── modeling.py               # Transformer-based model implementation
-│   │   ├── processing.py             # Tokenization and text processing
-│   │   ├── feature_extraction.py     # Image feature extraction logic
-│   │   ├── dataset.py                # Dataset preparation for training and evaluation
-│   │   ├── generation.py             # Caption generation logic
-│   │   └── utils.py                  # Helper functions and utilities
-├── notebooks/                        # Jupyter Notebooks for examples and demonstrations
-│   ├── dataset.ipynb                 # Notebook to demonstrate dataset preparation
-│   ├── evaluation.ipynb              # Notebook for model evaluation
-│   ├── inference.ipynb               # Notebook for caption inference on images
-├── README.md                         # Documentation for the package
-├── LICENSE                           # License file
-├── setup.py                          # Setup script for installation
-└── requirements.txt                  # List of dependencies
+│   ├── bit_image_captioning/               # Main package directory
+│   │   ├── __init__.py                     # Package initialization
+│   │   ├── datasets/                       # Dataset preparation
+│   │   │   ├── __init__.py
+│   │   │   └── image_captioning.py         # Dataset class for Image Captioning
+│   │   │
+│   │   ├── feature_extractors/             # Feature extraction
+│   │   │   ├── __init__.py
+│   │   │   ├── base.py                     # Base feature extractor interface
+│   │   │   ├── vinvl.py                    # VinVL feature extractor
+│   │   │   └── custom.py                   # Custom feature extractor (if needed)
+│   │   │
+│   │   ├── modeling/                       # Model implementation
+│   │   │   ├── __init__.py
+│   │   │   ├── modeling_bert.py            # Core captioning model using AraBERT
+│   │   │   └── configuration.py            # Configuration for AraBERT and feature extractors
+│   │   │
+│   │   ├── pipelines/                      # Hugging Face-style pipelines
+│   │   │   ├── __init__.py
+│   │   │   └── image_captioning.py         # Pipeline for generating captions
+│   │   │
+│   │   ├── tokenizers/                     # Tokenization utilities
+│   │   │   ├── __init__.py
+│   │   │   └── bert_tokenizer.py           # Tokenizer specific to AraBERT
+│   │   │
+│   │   ├── utils/                          # General utilities
+│   │   │   ├── __init__.py
+│   │   │   ├── logging.py                  # Logging functionality
+│   │   │   ├── data_processing.py          # Preprocessing utilities
+│   │   │   ├── visualization.py            # Visualization tools for captions
+│   │   │   └── metrics.py                  # Evaluation metrics (BLEU, CIDEr, ROUGE)
+│   │   │
+│   │   ├── cli/                            # Command-line interface
+│   │   │   ├── __init__.py
+│   │   │   └── captioning_cli.py           # CLI for generating captions
+│   │   │
+│   │   └── evaluation/                     # Caption evaluation tools
+│   │       ├── __init__.py
+│   │       ├── bleu.py                     # BLEU score calculation
+│   │       ├── cider.py                    # CIDEr score calculation
+│   │       └── rouge.py                    # ROUGE score calculation
+│   │
+│
+├── notebooks/                              # Demonstration notebooks
+│   ├── demo_image_captioning.ipynb         # Example for caption generation
+│   └── demo_custom_extractor.ipynb         # Example for custom feature extractors
+│
+├── LICENSE                                 # License file
+├── README.md                               # Documentation
+├── requirements.txt                        # Package requirements
+├── setup.py                                # Package installation script
+└── .gitignore                              # Git ignore file                
 ```
 
 
