@@ -1,5 +1,4 @@
 from torch.utils.data import Dataset
-from datasets import load_dataset
 import numpy as np
 import torch
 from ..tokenizers.bert_tokenizer import CaptionTensorizer
@@ -10,11 +9,10 @@ class OKVQADataset(Dataset):
     """
 
     def __init__(self, 
-                 path = "MahmoodAnaam/ok-vqa-ar-en-2",
+                 dataset,
+                 language="ar", 
                  feature_extractor=None, 
                  tokenizer=None,
-                 language="ar", 
-                 split="validation", 
                  add_od_labels=True,
                  max_img_seq_length=50,
                  max_seq_length=70,
@@ -31,7 +29,6 @@ class OKVQADataset(Dataset):
             feature_extractor: Feature extractor object for processing image features.
             tokenizer: Tokenizer for processing text (questions, answers).
             language (str): Desired language for questions/answers ("ar" for Arabic or "en" for English).
-            split (str): Dataset split to load ("train", "validation", or "test").
             add_od_labels (bool): Whether to add object detection (OD) labels to text.
             max_img_seq_length (int): Maximum length of image sequence (number of features per image).
             max_seq_length (int): Maximum length of combined text sequence.
@@ -45,10 +42,6 @@ class OKVQADataset(Dataset):
         if language not in ["ar", "en"]:
             raise ValueError("Language must be 'ar' (Arabic) or 'en' (English).")
         
-        # Validate the dataset split (must be "train", "validation", or "test")
-        if split not in ["train", "validation", "test"]:
-            raise ValueError("Split must be 'train', 'validation', or 'test'.")
-        
         # Ensure a feature extractor is provided
         if feature_extractor is None:
             raise ValueError("Feature extractor must be provided.")
@@ -58,15 +51,14 @@ class OKVQADataset(Dataset):
             raise ValueError("Tokenizer must be provided.")
 
         # Initialize class properties
-        self.path = path
+        
         self.language = language
-        self.split = split
         self.add_od_labels = add_od_labels
         self.is_train = is_train
         self.kwargs = kwargs
 
         # Load the dataset split using the Hugging Face `datasets` library
-        self.dataset = load_dataset("MahmoodAnaam/ok-vqa-ar-en-2", split=split,cache_dir='./OKVQA')
+        self.dataset = dataset
 
         # Set the feature extractor and tokenizer
         self.feature_extractor = feature_extractor
