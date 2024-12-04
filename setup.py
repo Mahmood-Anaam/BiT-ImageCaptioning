@@ -1,60 +1,21 @@
 from setuptools import setup, find_packages
-import glob
 import os
-import torch
-from torch.utils.cpp_extension import CUDA_HOME
-from torch.utils.cpp_extension import CppExtension
-from torch.utils.cpp_extension import CUDAExtension
+import subprocess
 
+# Helper function to install a sub-package
+def install_subpackage(subpackage_path):
+    """
+    Install a sub-package from its setup.py file.
+    """
+    subprocess.check_call(["pip", "install", "-e", subpackage_path])
 
-def get_extensions():
+# Define the path to the scene_graph_benchmark package
+scene_graph_path = os.path.join(
+    os.path.dirname(__file__), "src", "bit_image_captioning", "modeling", "scene_graph_benchmark"
+)
 
-    this_dir = os.path.dirname(os.path.abspath(__file__))
-    extensions_dir = os.path.join(this_dir,"src",
-                                  "bit_image_captioning",
-                                  "feature_extractors",
-                                   "scene_graph_benchmark",
-                                   "maskrcnn_benchmark", 
-                                   "csrc"
-                                   )
-
-    main_file = glob.glob(os.path.join(extensions_dir, "*.cpp"))
-    source_cpu = glob.glob(os.path.join(extensions_dir, "cpu", "*.cpp"))
-    source_cuda = glob.glob(os.path.join(extensions_dir, "cuda", "*.cu"))
-
-    sources = main_file + source_cpu
-    extension = CppExtension
-
-    extra_compile_args = {"cxx": []}
-    define_macros = []
-
-    if (torch.cuda.is_available() and CUDA_HOME is not None) or os.getenv("FORCE_CUDA", "0") == "1":
-        extension = CUDAExtension
-        sources += source_cuda
-        define_macros += [("WITH_CUDA", None)]
-        extra_compile_args["nvcc"] = [
-            "-DCUDA_HAS_FP16=1",
-            "-D__CUDA_NO_HALF_OPERATORS__",
-            "-D__CUDA_NO_HALF_CONVERSIONS__",
-            "-D__CUDA_NO_HALF2_OPERATORS__",
-        ]
-
-    sources = [os.path.join(extensions_dir, s) for s in sources]
-
-    include_dirs = [extensions_dir]
-
-    ext_modules = [
-        extension(
-            "maskrcnn_benchmark._C",
-            sources,
-            include_dirs=include_dirs,
-            define_macros=define_macros,
-            extra_compile_args=extra_compile_args,
-        )
-    ]
-
-    return ext_modules
-
+# Install the sub-package first
+install_subpackage(scene_graph_path)
 
 setup(
     name="bit_image_captioning",
@@ -83,8 +44,6 @@ setup(
         "Pillow>=8.3.2",
         "anytree>=2.12.1",
         "yacs>=0.1.8",
-        "cityscapesScripts>=2.2.4",
-        "clint>=0.5.1",
         "fsspec>=2024.10.0",
          
     ],
