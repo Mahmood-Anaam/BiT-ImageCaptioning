@@ -123,11 +123,21 @@ class OKVQADataset(Dataset):
         object_detections, image_features, od_labels = self.get_image_features(idx)
 
         # Use the CaptionTensorizer to prepare the inputs for the model
-        inputs = self.caption_tokenizer.tensorize_example(
+        (input_ids, attention_mask, segment_ids, img_feat, masked_pos) = self.caption_tokenizer.tensorize_example(
             text_a=None,
             img_feat=image_features,
             text_b=od_labels
         )
+
+        
+
+        inputs = {
+            "input_ids":input_ids,
+            "attention_mask":attention_mask,
+            "segment_ids":segment_ids,
+            "img_feat":img_feat,
+            "masked_pos":masked_pos
+        }
 
         # Construct the example dictionary containing all the processed data
         example = {
