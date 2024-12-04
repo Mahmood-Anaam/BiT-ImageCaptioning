@@ -17,8 +17,8 @@ from oscar.utils.logger import setup_logger
 
 
 
-from ..tokenizer import CaptionTensorizer
-from ..utils import ConstraintFilter, ConstraintBoxesReader,FiniteStateMachineBuilder
+from ..tokenizers.bert_tokenizer import CaptionTensorizer
+from ..modeling.modeling_bert_utils import ConstraintFilter, ConstraintBoxesReader,FiniteStateMachineBuilder
 
 
 
