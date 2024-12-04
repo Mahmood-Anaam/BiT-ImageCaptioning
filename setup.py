@@ -45,7 +45,7 @@ setup(
         "torchvision>=0.10.0",
         "transformers>=4.12.0",
         "pytorch-transformers>=1.2.0",
-        "datasets>=2.0.0",
+        "datasets>=3.1.0",
         "numpy>=1.19.5",
         "pandas>=1.1.5",
         "opencv-python>=4.5.3",
