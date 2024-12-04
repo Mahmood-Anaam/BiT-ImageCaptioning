@@ -45,7 +45,6 @@ setup(
         "torchvision>=0.10.0",
         "transformers>=4.12.0",
         "pytorch-transformers>=1.2.0",
-        "datasets==2.21.0",
         "numpy>=1.19.5",
         "pandas>=1.1.5",
         "opencv-python>=4.5.3",
@@ -57,7 +56,7 @@ setup(
         "Pillow>=8.3.2",
         "anytree>=2.12.1",
         "yacs>=0.1.8",
-        "fsspec>=2024.10.0",
+      
          
     ],
     classifiers=[
