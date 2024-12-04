@@ -69,6 +69,7 @@ setup(
         "cityscapesScripts>=2.2.4",
         "clint>=0.5.1",
         
+        
     ],
     ext_modules=get_extensions(),
     cmdclass={"build_ext": torch.utils.cpp_extension.BuildExtension},

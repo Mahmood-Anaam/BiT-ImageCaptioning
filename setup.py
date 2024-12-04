@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import os
 import subprocess
-
+import sys
 
 def restart_kernel():
     """
@@ -25,10 +25,9 @@ def install_subpackage(subpackage_path):
 
 # Define the path to the scene_graph_benchmark package
 scene_graph_path = os.path.join(
-    os.path.dirname(__file__), "scene_graph_benchmark"
+    os.path.dirname(__file__),"src","scene_graph_benchmark"
 )
 
-# Install the sub-package first
 install_subpackage(scene_graph_path)
 
 setup(
@@ -42,7 +41,7 @@ setup(
     packages=find_packages(where="src"),
     package_dir={"": "src"},
     install_requires=[
-        "ipython>=8.30.0"
+        "ipython>=8.30.0",
         "torch>=1.9.0",
         "torchvision>=0.10.0",
         "transformers>=4.12.0",
@@ -69,5 +68,8 @@ setup(
     ],
     python_requires=">=3.9",
 )
+
+# Install the sub-package first
+
 
 restart_kernel()
