@@ -1,150 +1,204 @@
 import torch
-import cv2
 import requests
 import numpy as np
 from typing import Union, List, Dict
-from pathlib import Path
 from PIL import Image
+from pathlib import Path
 from io import BytesIO
+from tqdm import tqdm
+import json
 
-from scene_graph_benchmark.AttrRCNN import AttrRCNN
-from scene_graph_benchmark.config import sg_cfg
-from maskrcnn_benchmark.config import cfg
-from maskrcnn_benchmark.data.transforms import build_transforms
-from maskrcnn_benchmark.utils.miscellaneous import set_seed
+
+from  .scene_graph_benchmark.scene_graph_benchmark.AttrRCNN import AttrRCNN
+from  .scene_graph_benchmark.scene_graph_benchmark.config import sg_cfg
+from  .scene_graph_benchmark.maskrcnn_benchmark.config import cfg
+from  .scene_graph_benchmark.maskrcnn_benchmark.data.transforms import build_transforms
+from  .scene_graph_benchmark.maskrcnn_benchmark.utils.miscellaneous import set_seed
 
 from .base import BaseFeatureExtractor
-from scene_graph_benchmark.wrappers.utils import cv2Img_to_Image, encode_spatial_features
+from .scene_graph_benchmark.maskrcnn_benchmark.config import cfg
+from .scene_graph_benchmark.scene_graph_benchmark.wrappers.utils import cv2Img_to_Image, encode_spatial_features
 
 
-class VinVLFeatureExtractor(BaseFeatureExtractor):
+
+
+
+
+class VinVLFeatureExtractor:
     """
-    Feature extractor using the VinVL model.
-    Supports single or batched inputs (paths, URLs, or image arrays/tensors).
+    VinVL Feature Extractor for extracting visual features from images.
+    Supports various input types (file path, URL, PIL.Image, numpy array, and torch.Tensor).
     """
 
-    def __init__(self, config_file: str, weight_file: str, device: str = "cuda"):
+    BASE_PATH = Path(__file__).parent.parent.parent
+    CONFIG_FILE = Path(BASE_PATH, 'sgg_configs/vgattr/vinvl_x152c4.yaml')
+    MODEL_DIR = Path(BASE_PATH, "models/vinvl_vg_x152c4")
+    MODEL_URL = "https://huggingface.co/michelecafagna26/vinvl_vg_x152c4/resolve/main/vinvl_vg_x152c4.pth"
+    LABEL_URL = "https://huggingface.co/michelecafagna26/vinvl_vg_x152c4/resolve/main/VG-SGG-dicts-vgoi6-clipped.json"
+
+    def __init__(self, config_file=None, opts=None, device="cuda"):
         """
-        Initialize the VinVL feature extractor.
+        Initializes the VinVL Feature Extractor.
 
         Args:
-            config_file (str): Path to the VinVL configuration file.
-            weight_file (str): Path to the pretrained weights file.
-            device (str): Device to run the model (e.g., "cuda" or "cpu").
+            config_file (str, optional): Path to the configuration file.
+            opts (dict, optional): Additional configuration options.
+            device (str, optional): Device to run the model on ("cuda" or "cpu").
         """
-        set_seed(1000, torch.cuda.device_count())
-        self.device = torch.device(device if torch.cuda.is_available() else "cpu")
+        # Set random seed and device
+        num_of_gpus = torch.cuda.device_count()
+        set_seed(1000, num_of_gpus)
+        self.device = device
 
-        # Load configuration and model
-        cfg.merge_from_file(config_file)
-        cfg.MODEL.WEIGHT = weight_file
-        cfg.MODEL.DEVICE = str(self.device)
-        cfg.TEST.OUTPUT_FEATURE = True
+        # Load default or custom options
+        self.opts = {
+            "MODEL.WEIGHT": str(self.MODEL_DIR / "vinvl_vg_x152c4.pth"),
+            "MODEL.ROI_HEADS.NMS_FILTER": 1,
+            "MODEL.ROI_HEADS.SCORE_THRESH": 0.2,
+            "TEST.IGNORE_BOX_REGRESSION": False,
+            "DATASETS.LABELMAP_FILE": str(self.MODEL_DIR / "VG-SGG-dicts-vgoi6-clipped.json"),
+            "TEST.OUTPUT_FEATURE": True
+        }
+        if opts:
+            self.opts.update(opts)
+
+        # Load the configuration file
+        self.config_file = config_file or self.CONFIG_FILE
+        cfg.set_new_allowed(True)
+        cfg.merge_from_other_cfg(sg_cfg)
+        cfg.merge_from_file(self.config_file)
+        cfg.update(self.opts)
+        cfg.set_new_allowed(False)
         cfg.freeze()
 
-        if cfg.MODEL.META_ARCHITECTURE != "AttrRCNN":
-            raise ValueError(f"Invalid META_ARCHITECTURE: {cfg.MODEL.META_ARCHITECTURE}. Expected 'AttrRCNN'.")
+        # Initialize the model
+        if cfg.MODEL.META_ARCHITECTURE == "AttrRCNN":
+            self.model = AttrRCNN(cfg)
+        else:
+            raise ValueError("MODEL.META_ARCHITECTURE must be 'AttrRCNN'.")
 
-        self.model = AttrRCNN(cfg)
-        self.model.to(self.device).eval()
+        self.model.eval()
+        self.model.to(self.device)
+
+        # Download model and label files if not present
+        self._download_model_and_labels()
+
+        # Load the model weights
+        self.checkpointer = DetectronCheckpointer(cfg, self.model, save_dir="")
+        self.checkpointer.load(str(self.MODEL_DIR / "vinvl_vg_x152c4.pth"))
+
+        # Load label maps
+        with open(self.MODEL_DIR / "VG-SGG-dicts-vgoi6-clipped.json", "rb") as fp:
+            label_dict = json.load(fp)
+        self.idx2label = {int(k): v for k, v in label_dict["idx_to_label"].items()}
+        self.label2idx = {k: int(v) for k, v in label_dict["label_to_idx"].items()}
+
+        # Initialize image transforms
         self.transforms = build_transforms(cfg, is_train=False)
 
-    def __call__(self, inputs: Union[str, List[Union[str, np.ndarray, torch.Tensor]]]) -> List[Dict]:
+    def _download_model_and_labels(self):
+        """Downloads the model weights and label files if they do not exist."""
+        if not (self.MODEL_DIR / "vinvl_vg_x152c4.pth").is_file():
+            self.MODEL_DIR.mkdir(parents=True, exist_ok=True)
+
+            # Download model weights
+            self._download_file(self.MODEL_URL, self.MODEL_DIR / "vinvl_vg_x152c4.pth")
+
+            # Download label map
+            self._download_file(self.LABEL_URL, self.MODEL_DIR / "VG-SGG-dicts-vgoi6-clipped.json")
+
+    @staticmethod
+    def _download_file(url, destination):
+        """Helper function to download a file."""
+        response = requests.get(url, stream=True)
+        total_size = int(response.headers.get('content-length', 0))
+        with open(destination, "wb") as f, tqdm(
+            desc=f"Downloading {destination.name}",
+            total=total_size,
+            unit="B",
+            unit_scale=True,
+            unit_divisor=1024,
+        ) as bar:
+            for data in response.iter_content(chunk_size=1024):
+                f.write(data)
+                bar.update(len(data))
+
+    def _prepare_image(self, img):
         """
-        Make the extractor callable to handle various input formats.
+        Prepares an image for feature extraction.
 
         Args:
-            inputs (Union[str, List[str], List[np.ndarray], List[torch.Tensor]]): 
-                Path(s), URL(s), image array(s), or tensor(s) representing images.
+            img: Input image (file path, URL, PIL.Image, numpy array, or tensor).
 
         Returns:
-            List[Dict]: Extracted features for each input.
+            PIL.Image: The prepared PIL.Image in RGB format.
         """
-        return self.extract_features(inputs)
-
-    def _load_image(self, image: Union[str, np.ndarray, torch.Tensor]) -> Image.Image:
-        """
-        Load an image from a path, URL, array, or tensor.
-
-        Args:
-            image (Union[str, np.ndarray, torch.Tensor]): Image path, URL, array, or tensor.
-
-        Returns:
-            Image.Image: Loaded image as a PIL Image.
-        """
-        if isinstance(image, str):  # Path or URL
-            if image.startswith("http"):
-                response = requests.get(image)
-                image = Image.open(BytesIO(response.content)).convert("RGB")
+        if isinstance(img, str):
+            # File path or URL
+            if img.startswith("http://") or img.startswith("https://"):
+                response = requests.get(img)
+                img = Image.open(BytesIO(response.content)).convert("RGB")
             else:
-                image = Image.open(image).convert("RGB")
-        elif isinstance(image, np.ndarray):  # NumPy array
-            image = Image.fromarray(image[..., ::-1])  # Convert BGR to RGB
-        elif isinstance(image, torch.Tensor):  # PyTorch tensor
-            image = Image.fromarray(image.cpu().numpy().transpose(1, 2, 0))  # CHW -> HWC
+                img = Image.open(img).convert("RGB")
+        elif isinstance(img, Image.Image):
+            # PIL.Image
+            img = img.convert("RGB")
+        elif isinstance(img, np.ndarray):
+            # NumPy array (assume RGB)
+            img = Image.fromarray(img)
+        elif torch.is_tensor(img):
+            # Tensor (assume CHW format)
+            img = img.permute(1, 2, 0).cpu().numpy()  # Convert CHW to HWC
+            img = Image.fromarray(np.uint8(img))
         else:
-            raise ValueError(f"Unsupported image format: {type(image)}")
-        return image
+            raise ValueError("Unsupported image input type.")
+        return img
 
-    def _process_image(self, image: Image.Image) -> torch.Tensor:
+    def __call__(self, imgs):
         """
-        Process a single image into the model's input format.
+        Extract features from images.
 
         Args:
-            image (Image.Image): PIL image.
+            imgs: Single image or a batch of images (list or single instance).
 
         Returns:
-            torch.Tensor: Preprocessed image tensor.
+            List[dict]: List of extracted features for each image.
         """
-        cv2_img = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
-        img_input = cv2Img_to_Image(cv2_img)
-        img_input, _ = self.transforms(img_input, target=None)
-        return img_input.to(self.device)
+        if not isinstance(imgs, list):
+            imgs = [imgs]  # Convert to batch format
 
-    def _extract_single(self, image: Union[str, np.ndarray, torch.Tensor]) -> Dict:
-        """
-        Extract features for a single image.
+        results = []
+        for img in imgs:
+            # Prepare the image
+            img = self._prepare_image(img)
 
-        Args:
-            image (Union[str, np.ndarray, torch.Tensor]): Image path, URL, or array/tensor.
+            # Apply transforms
+            img_tensor, _ = self.transforms(img, target=None)
+            img_tensor = img_tensor.to(self.device)
 
-        Returns:
-            Dict: Extracted features including boxes, classes, scores, etc.
-        """
-        pil_image = self._load_image(image)
-        img_tensor = self._process_image(pil_image)
+            # Perform inference
+            with torch.no_grad():
+                prediction = self.model(img_tensor)
+                prediction = prediction[0].to("cpu")
 
-        with torch.no_grad():
-            predictions = self.model([img_tensor])[0].to("cpu")
+            # Scale predictions to original image size
+            img_width, img_height = img.size
+            prediction = prediction.resize((img_width, img_height))
 
-        # Extract details
-        img_width, img_height = pil_image.size
-        predictions = predictions.resize((img_width, img_height))
-        boxes = predictions.bbox.tolist()
-        classes = predictions.get_field("labels").tolist()
-        scores = predictions.get_field("scores").tolist()
-        features = predictions.get_field("box_features").cpu().numpy()
-        spatial_features = encode_spatial_features(features, (img_width, img_height), mode="xyxy")
+            # Extract features
+            boxes = prediction.bbox.tolist()
+            classes = [self.idx2label[c] for c in prediction.get_field("labels").tolist()]
+            scores = prediction.get_field("scores").tolist()
+            features = prediction.get_field("box_features").cpu().numpy()
+            spatial_features = encode_spatial_features(features, (img_width, img_height), mode="xyxy")
 
-        return {
-            "boxes": boxes,
-            "classes": classes,
-            "scores": scores,
-            "features": features,
-            "spatial_features": spatial_features,
-        }
+            results.append({
+                "boxes": boxes,
+                "classes": classes,
+                "scores": scores,
+                "features": features,
+                "spatial_features": spatial_features,
+            })
 
-    def extract_features(self, inputs: Union[str, List[Union[str, np.ndarray, torch.Tensor]]]) -> List[Dict]:
-        """
-        Extract features from single or multiple inputs.
+        return results
 
-        Args:
-            inputs (Union[str, List[Union[str, np.ndarray, torch.Tensor]]]): Image paths, URLs, arrays, or tensors.
-
-        Returns:
-            List[Dict]: Extracted features for each input.
-        """
-        if isinstance(inputs, (str, np.ndarray, torch.Tensor)):
-            inputs = [inputs]
-
-        return [self._extract_single(image) for image in inputs]
