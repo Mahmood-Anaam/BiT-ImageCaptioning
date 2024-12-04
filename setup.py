@@ -41,7 +41,6 @@ setup(
     packages=find_packages(where="src"),
     package_dir={"": "src"},
     install_requires=[
-        "ipython>=8.30.0",
         "torch>=1.9.0",
         "torchvision>=0.10.0",
         "transformers>=4.12.0",
