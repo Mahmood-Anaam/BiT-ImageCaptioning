@@ -99,7 +99,7 @@ class OKVQADataset(Dataset):
         image = self.dataset[idx]["image"]
         
         # Use the feature extractor to get object detection details
-        object_detections = self.feature_extractor(image)
+        object_detections = self.feature_extractor([image])[0]
         
         # Combine visual features and spatial features into a single array
         v_feats = np.concatenate((object_detections['features'], object_detections['spatial_features']), axis=1)

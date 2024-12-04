@@ -11,7 +11,7 @@ def install_subpackage(subpackage_path):
 
 # Define the path to the scene_graph_benchmark package
 scene_graph_path = os.path.join(
-    os.path.dirname(__file__), "src", "bit_image_captioning", "modeling", "scene_graph_benchmark"
+    os.path.dirname(__file__), "scene_graph_benchmark"
 )
 
 # Install the sub-package first
