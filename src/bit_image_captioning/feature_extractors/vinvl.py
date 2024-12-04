@@ -18,7 +18,7 @@ from  .scene_graph_benchmark.maskrcnn_benchmark.utils.miscellaneous import set_s
 from .base import BaseFeatureExtractor
 from .scene_graph_benchmark.maskrcnn_benchmark.config import cfg
 from .scene_graph_benchmark.scene_graph_benchmark.wrappers.utils import cv2Img_to_Image, encode_spatial_features
-
+from .scene_graph_benchmark.maskrcnn_benchmark.utils.checkpoint import DetectronCheckpointer
 
 
 
