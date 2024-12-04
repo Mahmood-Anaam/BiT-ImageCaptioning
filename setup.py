@@ -2,6 +2,20 @@ from setuptools import setup, find_packages
 import os
 import subprocess
 
+
+def restart_kernel():
+    """
+    Restarts the kernel if running in a Jupyter Notebook or IPython environment.
+    """
+    try:
+        # Check if IPython is running
+        from IPython import get_ipython
+        if get_ipython() is not None:
+            # Send the command to restart the kernel
+            os._exit(3)  # Exit with a specific code to restart the kernel
+    except ImportError:
+        pass  # IPython is not installed; skip restarting
+
 # Helper function to install a sub-package
 def install_subpackage(subpackage_path):
     """
@@ -28,6 +42,7 @@ setup(
     packages=find_packages(where="src"),
     package_dir={"": "src"},
     install_requires=[
+        "ipython>=8.30.0"
         "torch>=1.9.0",
         "torchvision>=0.10.0",
         "transformers>=4.12.0",
@@ -54,3 +69,5 @@ setup(
     ],
     python_requires=">=3.9",
 )
+
+restart_kernel()
