@@ -9,22 +9,19 @@ from tqdm import tqdm
 import json
 
 
-from  .scene_graph_benchmark.scene_graph_benchmark.AttrRCNN import AttrRCNN
-from  .scene_graph_benchmark.scene_graph_benchmark.config import sg_cfg
-from  .scene_graph_benchmark.maskrcnn_benchmark.config import cfg
-from  .scene_graph_benchmark.maskrcnn_benchmark.data.transforms import build_transforms
-from  .scene_graph_benchmark.maskrcnn_benchmark.utils.miscellaneous import set_seed
 
 from .base import BaseFeatureExtractor
-from .scene_graph_benchmark.maskrcnn_benchmark.config import cfg
-from .scene_graph_benchmark.scene_graph_benchmark.wrappers.utils import cv2Img_to_Image, encode_spatial_features
-from .scene_graph_benchmark.maskrcnn_benchmark.utils.checkpoint import DetectronCheckpointer
 
+from scene_graph_benchmark.AttrRCNN import AttrRCNN
+from scene_graph_benchmark.config import sg_cfg
+from maskrcnn_benchmark.config import cfg
+from maskrcnn_benchmark.data.transforms import build_transforms
+from maskrcnn_benchmark.utils.miscellaneous import set_seed
+from maskrcnn_benchmark.utils.checkpoint import DetectronCheckpointer
+from scene_graph_benchmark.wrappers.utils import cv2Img_to_Image, encode_spatial_features
+from scene_graph_benchmark.wrappers.wrappers import VinVLVisualBackbone
 
-
-
-
-class VinVLFeatureExtractor:
+class VinVLFeatureExtractor(VinVLVisualBackbone):
     """
     VinVL Feature Extractor for extracting visual features from images.
     Supports various input types (file path, URL, PIL.Image, numpy array, and torch.Tensor).
@@ -45,56 +42,57 @@ class VinVLFeatureExtractor:
             opts (dict, optional): Additional configuration options.
             device (str, optional): Device to run the model on ("cuda" or "cpu").
         """
-        # Set random seed and device
-        num_of_gpus = torch.cuda.device_count()
-        set_seed(1000, num_of_gpus)
-        self.device = device
+        super(VinVLFeatureExtractor, self).__init__(config_file, opts)
+        # # Set random seed and device
+        # num_of_gpus = torch.cuda.device_count()
+        # set_seed(1000, num_of_gpus)
+        # self.device = device
 
-        # Load default or custom options
-        self.opts = {
-            "MODEL.WEIGHT": str(self.MODEL_DIR / "vinvl_vg_x152c4.pth"),
-            "MODEL.ROI_HEADS.NMS_FILTER": 1,
-            "MODEL.ROI_HEADS.SCORE_THRESH": 0.2,
-            "TEST.IGNORE_BOX_REGRESSION": False,
-            "DATASETS.LABELMAP_FILE": str(self.MODEL_DIR / "VG-SGG-dicts-vgoi6-clipped.json"),
-            "TEST.OUTPUT_FEATURE": True
-        }
-        if opts:
-            self.opts.update(opts)
+        # # Load default or custom options
+        # self.opts = {
+        #     "MODEL.WEIGHT": str(self.MODEL_DIR / "vinvl_vg_x152c4.pth"),
+        #     "MODEL.ROI_HEADS.NMS_FILTER": 1,
+        #     "MODEL.ROI_HEADS.SCORE_THRESH": 0.2,
+        #     "TEST.IGNORE_BOX_REGRESSION": False,
+        #     "DATASETS.LABELMAP_FILE": str(self.MODEL_DIR / "VG-SGG-dicts-vgoi6-clipped.json"),
+        #     "TEST.OUTPUT_FEATURE": True
+        # }
+        # if opts:
+        #     self.opts.update(opts)
 
-        # Load the configuration file
-        self.config_file = config_file or self.CONFIG_FILE
-        cfg.set_new_allowed(True)
-        cfg.merge_from_other_cfg(sg_cfg)
-        cfg.merge_from_file(self.config_file)
-        cfg.update(self.opts)
-        cfg.set_new_allowed(False)
-        cfg.freeze()
+        # # Load the configuration file
+        # self.config_file = config_file or self.CONFIG_FILE
+        # cfg.set_new_allowed(True)
+        # cfg.merge_from_other_cfg(sg_cfg)
+        # cfg.merge_from_file(self.config_file)
+        # cfg.update(self.opts)
+        # cfg.set_new_allowed(False)
+        # cfg.freeze()
 
-        # Initialize the model
-        if cfg.MODEL.META_ARCHITECTURE == "AttrRCNN":
-            self.model = AttrRCNN(cfg)
-        else:
-            raise ValueError("MODEL.META_ARCHITECTURE must be 'AttrRCNN'.")
+        # # Initialize the model
+        # if cfg.MODEL.META_ARCHITECTURE == "AttrRCNN":
+        #     self.model = AttrRCNN(cfg)
+        # else:
+        #     raise ValueError("MODEL.META_ARCHITECTURE must be 'AttrRCNN'.")
 
-        self.model.eval()
-        self.model.to(self.device)
+        # self.model.eval()
+        # self.model.to(self.device)
 
-        # Download model and label files if not present
-        self._download_model_and_labels()
+        # # Download model and label files if not present
+        # self._download_model_and_labels()
 
-        # Load the model weights
-        self.checkpointer = DetectronCheckpointer(cfg, self.model, save_dir="")
-        self.checkpointer.load(str(self.MODEL_DIR / "vinvl_vg_x152c4.pth"))
+        # # Load the model weights
+        # self.checkpointer = DetectronCheckpointer(cfg, self.model, save_dir="")
+        # self.checkpointer.load(str(self.MODEL_DIR / "vinvl_vg_x152c4.pth"))
 
-        # Load label maps
-        with open(self.MODEL_DIR / "VG-SGG-dicts-vgoi6-clipped.json", "rb") as fp:
-            label_dict = json.load(fp)
-        self.idx2label = {int(k): v for k, v in label_dict["idx_to_label"].items()}
-        self.label2idx = {k: int(v) for k, v in label_dict["label_to_idx"].items()}
+        # # Load label maps
+        # with open(self.MODEL_DIR / "VG-SGG-dicts-vgoi6-clipped.json", "rb") as fp:
+        #     label_dict = json.load(fp)
+        # self.idx2label = {int(k): v for k, v in label_dict["idx_to_label"].items()}
+        # self.label2idx = {k: int(v) for k, v in label_dict["label_to_idx"].items()}
 
-        # Initialize image transforms
-        self.transforms = build_transforms(cfg, is_train=False)
+        # # Initialize image transforms
+        # self.transforms = build_transforms(cfg, is_train=False)
 
     def _download_model_and_labels(self):
         """Downloads the model weights and label files if they do not exist."""
