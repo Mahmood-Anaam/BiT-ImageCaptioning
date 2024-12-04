@@ -66,7 +66,7 @@ class OKVQADataset(Dataset):
         self.kwargs = kwargs
 
         # Load the dataset split using the Hugging Face `datasets` library
-        self.dataset = load_dataset("MahmoodAnaam/ok-vqa-ar-en-2", split=split)
+        self.dataset = load_dataset("MahmoodAnaam/ok-vqa-ar-en-2", split=split,cache_dir='./OKVQA')
 
         # Set the feature extractor and tokenizer
         self.feature_extractor = feature_extractor
