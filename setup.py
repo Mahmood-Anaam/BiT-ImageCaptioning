@@ -9,10 +9,10 @@ def restart_kernel():
     """
     try:
         # Check if IPython is running
-        from IPython import get_ipython
+        from IPython import get_ipython,Application
         if get_ipython() is not None:
-            # Send the command to restart the kernel
-            os._exit(3)  # Exit with a specific code to restart the kernel
+            app = Application.instance()
+            app.kernel.do_shutdown(True) 
     except ImportError:
         pass  # IPython is not installed; skip restarting
 
