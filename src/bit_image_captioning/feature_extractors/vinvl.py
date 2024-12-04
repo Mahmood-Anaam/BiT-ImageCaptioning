@@ -30,7 +30,7 @@ class VinVLFeatureExtractor:
     Supports various input types (file path, URL, PIL.Image, numpy array, and torch.Tensor).
     """
 
-    BASE_PATH = Path(__file__).parent.parent.parent
+    BASE_PATH = Path(Path(__file__).parent,'scene_graph_benchmark')
     CONFIG_FILE = Path(BASE_PATH, 'sgg_configs/vgattr/vinvl_x152c4.yaml')
     MODEL_DIR = Path(BASE_PATH, "models/vinvl_vg_x152c4")
     MODEL_URL = "https://huggingface.co/michelecafagna26/vinvl_vg_x152c4/resolve/main/vinvl_vg_x152c4.pth"
