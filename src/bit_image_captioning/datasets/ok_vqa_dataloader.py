@@ -50,13 +50,13 @@ class OKVQADataLoader:
         # Merge examples into a single batch dictionary
         batch_dict = {
             "indices": indices,  # List of indices
-            "metadata": [example["metadata"] for example in examples],  # Metadata for each sample
+            # "metadata": [example["metadata"] for example in examples],  # Metadata for each sample
             "images": [example["image"] for example in examples],  # Raw PIL images
             "questions": [example["question"] for example in examples],  # Tokenized questions
             "answers": [example["answers"] for example in examples],  # List of answers
-            "raw_answers": [example["raw_answers"] for example in examples],  # Raw answers
+            # "raw_answers": [example["raw_answers"] for example in examples],  # Raw answers
             "confidence_answers": [example["confidence_answers"] for example in examples],  # Answer confidences
-            "object_detections": [example["object_detections"] for example in examples],  # Object detection details
+            # "object_detections": [example["object_detections"] for example in examples],  # Object detection details
             "inputs": torch.stack([example["inputs"] for example in examples])  # Batched model inputs as tensors
         }
 
