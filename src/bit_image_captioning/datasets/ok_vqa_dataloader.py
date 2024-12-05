@@ -51,7 +51,7 @@ class OKVQADataLoader:
                 "input_ids": torch.stack([torch.tensor(example["inputs"]["input_ids"]) for example in examples]),
                 "attention_mask": torch.stack([torch.tensor(example["inputs"]["attention_mask"]) for example in examples]),
                 "token_type_ids": torch.stack([torch.tensor(example["inputs"]["token_type_ids"]) for example in examples]),
-                "img_feats": torch.stack([torch.tensor(example["inputs"]["img_feat"]) for example in examples]),
+                "img_feats": torch.stack([torch.tensor(example["inputs"]["img_feats"]) for example in examples]),
                 "masked_pos": torch.stack([torch.tensor(example["inputs"]["masked_pos"]) for example in examples]),
             }
 
