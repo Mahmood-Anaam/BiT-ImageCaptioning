@@ -69,7 +69,7 @@ setup(
         "nltk",
         "joblib",
         "ipython",
-        "jupyter",
+        "ipykernel==5.5.6",
 
         ],
 
