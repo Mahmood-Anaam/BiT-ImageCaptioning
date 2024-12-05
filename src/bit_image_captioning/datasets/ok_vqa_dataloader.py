@@ -47,17 +47,26 @@ class OKVQADataLoader:
         # Separate indices and examples
         indices, examples = zip(*batch)
 
+        inputs = {
+                "input_ids": torch.stack([torch.tensor(example["inputs"]["input_ids"]) for example in examples]),
+                "attention_mask": torch.stack([torch.tensor(example["inputs"]["attention_mask"]) for example in examples]),
+                "token_type_ids": torch.stack([torch.tensor(example["inputs"]["token_type_ids"]) for example in examples]),
+                "img_feats": torch.stack([torch.tensor(example["inputs"]["img_feat"]) for example in examples]),
+                "masked_pos": torch.stack([torch.tensor(example["inputs"]["masked_pos"]) for example in examples]),
+            }
+
         # Merge examples into a single batch dictionary
         batch_dict = {
             "indices": indices,  # List of indices
             # "metadata": [example["metadata"] for example in examples],  # Metadata for each sample
-            "images": [example["image"] for example in examples],  # Raw PIL images
+            # "images": [example["image"] for example in examples],  # Raw PIL images
             "questions": [example["question"] for example in examples],  # Tokenized questions
             "answers": [example["answers"] for example in examples],  # List of answers
             # "raw_answers": [example["raw_answers"] for example in examples],  # Raw answers
             "confidence_answers": [example["confidence_answers"] for example in examples],  # Answer confidences
             # "object_detections": [example["object_detections"] for example in examples],  # Object detection details
-            "inputs": torch.stack([example["inputs"] for example in examples])  # Batched model inputs as tensors
+            "inputs": inputs  # Batched model inputs as tensors
+
         }
 
         return batch_dict
