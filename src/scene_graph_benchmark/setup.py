@@ -62,7 +62,7 @@ setup(
     author="Mahmood Anaam",
     url="https://github.com/Mahmood-Anaam/vinvl-visualbackbone.git",
     description="object detection in pytorch",
-    packages=find_packages(exclude=("configs", "tests",)),
+    packages=find_packages(exclude=("configs")),
     license="MIT",
     install_requires=[
         "yacs>=0.1.8",

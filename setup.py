@@ -22,7 +22,8 @@ def install_subpackage(subpackage_path):
     Install a sub-package from its setup.py file.
     """
     # subprocess.check_call(["pip", "install", "-e", subpackage_path])
-    os.system(f"pip install -e {subpackage_path}")
+    subprocess.run(f"pip install -e {subpackage_path}", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True, text=True)
+    # os.system(f"pip install -e {subpackage_path}")
 
 # Define the path to the scene_graph_benchmark package
 scene_graph_path = os.path.join(
