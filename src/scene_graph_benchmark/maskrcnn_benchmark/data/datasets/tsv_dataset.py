@@ -7,9 +7,10 @@ import os.path as op
 import numpy as np
 
 from maskrcnn_benchmark.structures.tsv_file import TSVFile
-from maskrcnn_benchmark.data.datasets.utils.load_files import load_linelist_file, load_from_yaml_file
-from maskrcnn_benchmark.data.datasets.utils.load_files import find_file_path_in_yaml
-from maskrcnn_benchmark.data.datasets.utils.image_ops import img_from_base64
+
+from .utils.load_files import load_linelist_file, load_from_yaml_file
+from .utils.load_files import find_file_path_in_yaml
+from .utils.image_ops import img_from_base64
 
 class TSVDataset(object):
     def __init__(self, img_file, label_file=None, hw_file=None,
