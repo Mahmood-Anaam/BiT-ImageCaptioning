@@ -31,10 +31,19 @@ class BiTImageCaptioningPipeline:
         self.model = BertForImageCaptioning.from_pretrained(
             cfg.checkpoint, config=self.config
         )
+        
+        tokens = [self.tokenizer.cls_token, self.tokenizer.sep_token,
+                  self.tokenizer.pad_token, self.tokenizer.mask_token
+                  ]
+        (self.cls_token_id, self.sep_token_id,
+        self.pad_token_id, self.mask_token_id )= self.tokenizer.convert_tokens_to_ids(tokens)
+
 
         # Move model to the configured device
         self.model.to(cfg.device)
         self.model.eval()
+
+       
 
         self.input_parms ={
 
@@ -58,26 +67,8 @@ class BiTImageCaptioningPipeline:
             "num_keep_best": self.cfg.num_keep_best,
         }
 
-        # Automatically set token IDs from the tokenizer
-        self._set_token_ids()
-
-    def _set_token_ids(self):
-        """
-        Sets the token IDs (CLS, SEP, PAD, MASK) in the configuration object.
-        """
-        cls_token_id, sep_token_id, pad_token_id, mask_token_id = self.tokenizer.convert_tokens_to_ids(
-            [
-                self.tokenizer.cls_token,
-                self.tokenizer.sep_token,
-                self.tokenizer.pad_token,
-                self.tokenizer.mask_token,
-            ]
-        )
-        self.cls_token_id = cls_token_id
-        self.sep_token_id = sep_token_id
-        self.pad_token_id = pad_token_id
-        self.mask_token_id = mask_token_id
-
+     
+       
     def _prepare_inputs(self, image: Union[Image.Image, np.ndarray, str]) -> Dict:
         """
         Prepares inputs for the model from a single image.
@@ -126,7 +117,7 @@ class BiTImageCaptioningPipeline:
             for image in images:
                 # Prepare inputs for the model
                 inputs = self._prepare_inputs(image).update(self.input_parms)
-                
+
                 # Generate captions using the model
                 with torch.no_grad():
                     outputs = self.model(**inputs)
