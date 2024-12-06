@@ -84,4 +84,4 @@ setup(
 # Install the sub-package first
 
 
-restart_kernel()
+# restart_kernel()
