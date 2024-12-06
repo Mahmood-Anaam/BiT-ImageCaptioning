@@ -116,7 +116,8 @@ class BiTImageCaptioningPipeline:
         try:
             for image in images:
                 # Prepare inputs for the model
-                inputs = self._prepare_inputs(image).update(self.input_parms)
+                inputs = self._prepare_inputs(image)
+                inputs.update(self.input_parms)
 
                 # Generate captions using the model
                 with torch.no_grad():
