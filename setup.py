@@ -31,7 +31,7 @@ scene_graph_path = os.path.join(
     os.path.dirname(__file__),"src","scene_graph_benchmark"
 )
 
-install_subpackage(scene_graph_path)
+#install_subpackage(scene_graph_path)
 
 setup(
     name="bit_image_captioning",
