@@ -114,6 +114,9 @@ class BiTImageCaptioningPipeline:
             List[List[Dict]]: List of captions with confidence scores for each image.
             List[List[Dict]]: List of image features for each image.
         """
+        if not isinstance(images, list):
+            images = [images]  # Convert to batch format
+
         captions = []
         features=[]
         try:
