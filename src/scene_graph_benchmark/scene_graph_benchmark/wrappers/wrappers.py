@@ -1,7 +1,7 @@
 from scene_graph_benchmark.AttrRCNN import AttrRCNN
 from scene_graph_benchmark.config import sg_cfg
 from maskrcnn_benchmark.config import cfg
-from maskrcnn_benchmark.data.transforms import build_transforms
+from scene_graph_benchmark.wrappers.transforms import build_transforms
 from maskrcnn_benchmark.utils.miscellaneous import set_seed
 from maskrcnn_benchmark.utils.checkpoint import DetectronCheckpointer
 
