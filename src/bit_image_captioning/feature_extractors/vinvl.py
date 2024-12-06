@@ -14,16 +14,17 @@ class VinVLFeatureExtractor(VinVLVisualBackbone):
     Supports various input types (file path, URL, PIL.Image, numpy array, and torch.Tensor).
     """
     
-    def __init__(self, config_file=None, opts=None, device="cuda"):
+    def __init__(self, config_file=None, opts=None,add_od_labels=True):
         """
         Initializes the VinVL Feature Extractor.
 
         Args:
             config_file (str, optional): Path to the configuration file.
             opts (dict, optional): Additional configuration options.
-            device (str, optional): Device to run the model on ("cuda" or "cpu").
+            add_od_labels (bool, optional): Whether to add object detection labels to input.
         """
         super(VinVLFeatureExtractor, self).__init__(config_file, opts)
+        self.add_od_labels = add_od_labels
         
 
     def _prepare_image(self, img):
@@ -95,11 +96,24 @@ class VinVLFeatureExtractor(VinVLVisualBackbone):
             features = prediction.get_field("box_features").cpu().numpy()
             spatial_features = encode_spatial_features(features, (img_width, img_height), mode="xyxy")
 
+            
+            img_feats = torch.tensor(np.concatenate((features, spatial_features),axis=1),
+                                    dtype=torch.float32).reshape((len(boxes),-1))
+           
+
+            # Prepare object detection labels if enabled
+            if self.add_od_labels:
+                od_labels = " ".join(classes)
+            else:
+                od_labels = None
+            
+           
             results.append({
                 "boxes": boxes,
                 "classes": classes,
                 "scores": scores,
-                "features": features,
+                "img_feats": img_feats,
+                "od_labels":od_labels,
                 "spatial_features": spatial_features,
             })
 

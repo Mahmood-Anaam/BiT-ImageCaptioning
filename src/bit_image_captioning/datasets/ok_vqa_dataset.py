@@ -63,6 +63,7 @@ class OKVQADataset(Dataset):
         # Set the feature extractor and tokenizer
         self.feature_extractor = feature_extractor
         self.tokenizer = tokenizer
+        self.feature_extractor.add_od_labels = self.add_od_labels
 
         # Initialize a CaptionTensorizer for preparing text and image inputs for the model
         self.caption_tokenizer = CaptionTensorizer(
@@ -84,8 +85,6 @@ class OKVQADataset(Dataset):
 
         Returns:
             object_detections (dict): Details from the feature extractor, including bounding boxes, classes, scores, features, and spatial features.
-            image_features (torch.Tensor): Extracted image features as a tensor.
-            od_labels (str): Concatenated object detection labels (if applicable).
         """
         # Load the image from the dataset
         image = self.dataset[idx]["image"]
@@ -93,17 +92,8 @@ class OKVQADataset(Dataset):
         # Use the feature extractor to get object detection details
         object_detections = self.feature_extractor([image])[0]
         
-        # Combine visual features and spatial features into a single array
-        v_feats = np.concatenate((object_detections['features'], object_detections['spatial_features']), axis=1)
-        image_features = torch.Tensor(np.array(v_feats))  # Convert features to PyTorch tensor
 
-        # If OD labels are enabled, combine all detected classes into a single string
-        if self.add_od_labels:
-            od_labels = " ".join(object_detections['classes'])
-        else:
-            od_labels = None
-
-        return object_detections, image_features, od_labels
+        return object_detections
 
     def __getitem__(self, idx):
         """
@@ -120,7 +110,8 @@ class OKVQADataset(Dataset):
         sample = self.dataset[idx]
 
         # Extract image features and object detection labels
-        object_detections, image_features, od_labels = self.get_image_features(idx)
+        object_detections = self.get_image_features(idx)
+        image_features,od_labels = object_detections["img_feats"],object_detections["od_labels"]
 
         # Use the CaptionTensorizer to prepare the inputs for the model
         (input_ids, attention_mask, token_type_ids, img_feats, masked_pos) = self.caption_tokenizer.tensorize_example(
