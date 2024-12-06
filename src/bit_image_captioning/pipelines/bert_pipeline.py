@@ -78,6 +78,7 @@ class BiTImageCaptioningPipeline:
 
         Returns:
             Dict: Dictionary of inputs for the model.
+            Dict: object detections
         """
         try:
             # Extract image features and object detection labels
@@ -97,7 +98,7 @@ class BiTImageCaptioningPipeline:
                 "img_feats": img_feats.unsqueeze(0).to(self.cfg.device),
                 "masked_pos": masked_pos.unsqueeze(0).to(self.cfg.device),
             }
-            return inputs
+            return object_detections,inputs
         except Exception as e:
             raise RuntimeError(f"Failed to prepare inputs for the image: {e}")
 
@@ -111,13 +112,16 @@ class BiTImageCaptioningPipeline:
 
         Returns:
             List[List[Dict]]: List of captions with confidence scores for each image.
+            List[List[Dict]]: List of image features for each image.
         """
-        results = []
+        captions = []
+        features=[]
         try:
             for image in images:
                 # Prepare inputs for the model
-                inputs = self._prepare_inputs(image)
+                image_features,inputs = self._prepare_inputs(image)
                 inputs.update(self.input_parms)
+                features.append(image_features)
 
                 # Generate captions using the model
                 with torch.no_grad():
@@ -127,16 +131,16 @@ class BiTImageCaptioningPipeline:
                 all_caps = outputs[0]
                 all_confs = torch.exp(outputs[1])
 
-                captions = []
+                caps = []
                 for cap, conf in zip(all_caps[0], all_confs[0]):
                     caption = self.tokenizer.decode(
                         cap.tolist(), skip_special_tokens=True
                     )
-                    captions.append({"caption": caption, "confidence": conf.item()})
+                    caps.append({"caption": caption, "confidence": conf.item()})
 
-                results.append(captions)
+                captions.append(caps)
 
-            return results
+            return features,captions
         except Exception as e:
             raise RuntimeError(f"Failed to generate captions for the images: {e}")
     
