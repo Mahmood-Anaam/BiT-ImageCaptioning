@@ -42,12 +42,10 @@ setup(
     package_dir={"": "src"},
 
     install_requires=[
-        
-        
-        "pytorch-transformers>=1.2.0",
-        "anytree>=2.12.1",
-        "yacs>=0.1.8",
-        "clint>=0.5.1",
+        "pytorch-transformers",
+        "anytree",
+        "yacs",
+        "clint",
         "nltk",
         "joblib",
         
@@ -59,7 +57,7 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires=">=3.9",
+    python_requires=">=3.7",
 )
 
 # Install the sub-package first
